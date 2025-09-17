@@ -144,7 +144,7 @@ const Messenger: React.FC = () => {
                                         <div className="flex justify-between items-center">
                                             <p className="font-semibold text-card-foreground truncate">{convo.friendId}</p>
                                             {count > 0 && (
-                                                <span className="me-2 flex-shrink-0 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                                                <span className="me-2 flex-shrink-0 bg-primary text-primary-foreground text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
                                                     {count}
                                                 </span>
                                             )}

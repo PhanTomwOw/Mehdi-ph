@@ -57,12 +57,14 @@ const Header: React.FC<HeaderProps> = ({ setCurrentView, onOpenLogin, onOpenRegi
             <>
               <button 
                 onClick={() => setCurrentView({ name: 'messenger' })}
-                className="relative text-muted-foreground hover:text-primary transition-colors duration-300 font-medium"
+                className="text-muted-foreground hover:text-primary transition-colors duration-300 font-medium"
               >
-                  پیام‌رسان
-                  {totalUnreadCount > 0 && (
-                     <span className="absolute top-0 left-0 block h-2.5 w-2.5 -translate-y-1/2 -translate-x-full transform rounded-full bg-primary ring-2 ring-card"></span>
-                  )}
+                  <span className="relative">
+                    پیام‌رسان
+                    {totalUnreadCount > 0 && (
+                       <span className="absolute top-0 -right-2.5 h-2 w-2 rounded-full bg-primary"></span>
+                    )}
+                  </span>
               </button>
               <button 
                 onClick={() => setCurrentView({ name: 'profile' })}
