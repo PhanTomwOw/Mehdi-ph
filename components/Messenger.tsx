@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { UserCircleIcon, SendIcon, FaceSmileIcon } from './IconComponents';
+import { UserCircleIcon, SendIcon, FaceSmileIcon, PencilIcon } from './IconComponents';
 import type { DirectMessage } from '../types';
 
 const getConversationId = (userId1: string, userId2: string) => {
@@ -15,20 +15,21 @@ const formatTimestamp = (timestamp: number): string => {
     const diffHours = Math.round(diffMinutes / 60);
     const diffDays = Math.round(diffHours / 24);
 
-    if (diffSeconds < 60) return `${diffSeconds}s`;
-    if (diffMinutes < 60) return `${diffMinutes}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d`;
-    return messageDate.toLocaleDateString();
+    if (diffSeconds < 60) return `${diffSeconds} ثانیه`;
+    if (diffMinutes < 60) return `${diffMinutes} دقیقه`;
+    if (diffHours < 24) return `${diffHours} ساعت`;
+    if (diffDays === 1) return 'دیروز';
+    if (diffDays < 7) return `${diffDays} روز`;
+    return messageDate.toLocaleDateString('fa-IR');
 };
 
 
 const Messenger: React.FC = () => {
-    const { currentUser, friends, directMessages, sendMessage, unreadCounts, markConversationAsRead, addSimulatedReply, toggleReaction } = useAuth();
+    const { currentUser, friends, directMessages, sendMessage, unreadCounts, markConversationAsRead, addSimulatedReply, toggleReaction, editMessage } = useAuth();
     const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
     const [message, setMessage] = useState('');
     const [reactingTo, setReactingTo] = useState<number | null>(null);
+    const [editingMessage, setEditingMessage] = useState<{id: number, text: string} | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     
     const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -102,22 +103,29 @@ const Messenger: React.FC = () => {
             // Handle error UI if needed
         }
     };
+    
+    const handleSaveEdit = () => {
+        if(!editingMessage || !currentUser || !selectedFriend) return;
+        const conversationId = getConversationId(currentUser.emailOrPhone, selectedFriend);
+        editMessage(conversationId, editingMessage.id, editingMessage.text);
+        setEditingMessage(null);
+    };
 
     if (!currentUser) {
         return (
             <div className="container mx-auto px-6 py-12 text-center">
-                <p className="text-muted-foreground">Please log in to use the messenger.</p>
+                <p className="text-muted-foreground">لطفاً برای استفاده از پیام‌رسان وارد شوید.</p>
             </div>
         );
     }
     
     return (
         <div className="container mx-auto px-6 py-8">
-            <div className="h-[calc(100vh-150px)] max-h-[800px] flex bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-                {/* Left Pane: Conversations List */}
-                <div className="w-1/3 border-r border-border flex flex-col">
+            <div className="h-[calc(100vh-150px)] max-h-[800px] flex flex-row-reverse bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
+                {/* Conversations List */}
+                <div className="w-1/3 border-l border-border flex flex-col">
                     <div className="p-4 border-b border-border">
-                        <h1 className="text-xl font-bold text-foreground">Conversations</h1>
+                        <h1 className="text-xl font-bold text-foreground">گفتگوها</h1>
                     </div>
                     <div className="flex-grow overflow-y-auto">
                         {conversations.length > 0 ? conversations.map(convo => {
@@ -127,7 +135,7 @@ const Messenger: React.FC = () => {
                                 <button
                                     key={convo.friendId}
                                     onClick={() => setSelectedFriend(convo.friendId)}
-                                    className={`w-full text-left p-4 flex items-center gap-3 transition-colors ${
+                                    className={`w-full text-right p-4 flex items-center gap-3 transition-colors ${
                                         selectedFriend === convo.friendId ? 'bg-primary/10' : 'hover:bg-accent'
                                     }`}
                                 >
@@ -136,7 +144,7 @@ const Messenger: React.FC = () => {
                                         <div className="flex justify-between items-center">
                                             <p className="font-semibold text-card-foreground truncate">{convo.friendId}</p>
                                             {count > 0 && (
-                                                <span className="ml-2 flex-shrink-0 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                                                <span className="me-2 flex-shrink-0 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                                                     {count}
                                                 </span>
                                             )}
@@ -144,11 +152,11 @@ const Messenger: React.FC = () => {
                                         <div className="flex justify-between items-baseline">
                                             <p className="text-sm text-muted-foreground truncate flex-grow">
                                                 {convo.lastMessage 
-                                                    ? `${convo.lastMessage.sender === currentUser.emailOrPhone ? 'You: ' : ''}${convo.lastMessage.message}`
-                                                    : 'No messages yet.'}
+                                                    ? `${convo.lastMessage.sender === currentUser.emailOrPhone ? 'شما: ' : ''}${convo.lastMessage.message}`
+                                                    : 'هنوز پیامی نیست.'}
                                             </p>
                                             {convo.lastMessage && (
-                                                <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                                                <p className="text-xs text-muted-foreground flex-shrink-0 mr-2">
                                                     {formatTimestamp(convo.lastMessage.timestamp)}
                                                 </p>
                                             )}
@@ -157,12 +165,12 @@ const Messenger: React.FC = () => {
                                 </button>
                             )
                         }) : (
-                            <p className="text-muted-foreground text-center p-6">No friends yet. Add friends from your profile to start chatting.</p>
+                            <p className="text-muted-foreground text-center p-6">هنوز دوستی ندارید. از پروفایل خود دوستانتان را اضافه کنید.</p>
                         )}
                     </div>
                 </div>
 
-                {/* Right Pane: Chat Window */}
+                {/* Chat Window */}
                 <div className="w-2/3 flex flex-col">
                     {selectedFriend ? (
                         <>
@@ -172,16 +180,21 @@ const Messenger: React.FC = () => {
                             </div>
                             <div className="flex-grow p-6 overflow-y-auto bg-background/50">
                                 <div className="space-y-1">
-                                    {activeConversationMessages.map(msg => (
+                                    {activeConversationMessages.map(msg => {
+                                        const isMyMessage = msg.sender === currentUser.emailOrPhone;
+                                        const isEditing = editingMessage?.id === msg.id;
+                                        const canEdit = isMyMessage && (Date.now() - msg.timestamp) < 60000;
+
+                                        return (
                                         <div key={msg.id}>
-                                            <div className={`flex items-center gap-2 max-w-lg group ${
-                                                    msg.sender === currentUser.emailOrPhone ? 'ml-auto flex-row-reverse' : ''
+                                            <div className={`flex items-end gap-2 max-w-lg group ${
+                                                    isMyMessage ? 'mr-auto flex-row-reverse' : 'ml-auto'
                                                 }`}
                                             >
                                                 <div className="relative">
                                                     {reactingTo === msg.id && (
                                                         <div 
-                                                            className={`absolute z-10 flex gap-1 bg-card p-2 rounded-full shadow-lg border border-border ${msg.sender === currentUser.emailOrPhone ? 'right-0 -top-12' : 'left-0 -top-12'}`}
+                                                            className={`absolute z-10 flex gap-1 bg-card p-2 rounded-full shadow-lg border border-border ${isMyMessage ? 'left-0 -top-12' : 'right-0 -top-12'}`}
                                                             onMouseLeave={() => setReactingTo(null)}
                                                         >
                                                             {EMOJI_REACTIONS.map(emoji => (
@@ -200,18 +213,40 @@ const Messenger: React.FC = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <div
-                                                        className={`rounded-2xl px-4 py-2.5 ${
-                                                            msg.sender === currentUser.emailOrPhone
-                                                                ? 'bg-primary text-primary-foreground rounded-br-none'
-                                                                : 'bg-muted text-card-foreground rounded-bl-none'
-                                                        }`}
-                                                    >
-                                                        <p>{msg.message}</p>
-                                                    </div>
+                                                     {isEditing ? (
+                                                        <div className="w-72">
+                                                            <textarea
+                                                                value={editingMessage.text}
+                                                                onChange={e => setEditingMessage({...editingMessage, text: e.target.value})}
+                                                                className="w-full text-sm bg-background p-2 rounded border border-input focus:outline-none focus:ring-1 focus:ring-ring"
+                                                            />
+                                                            <div className="flex justify-end gap-2 mt-1">
+                                                                <button onClick={() => setEditingMessage(null)} className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground hover:bg-secondary/80">لغو</button>
+                                                                <button onClick={handleSaveEdit} className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary/90">ذخیره</button>
+                                                            </div>
+                                                        </div>
+                                                     ) : (
+                                                        <div
+                                                            className={`rounded-2xl px-4 py-2.5 ${
+                                                                isMyMessage
+                                                                    ? 'bg-primary text-primary-foreground rounded-bl-none'
+                                                                    : 'bg-muted text-card-foreground rounded-br-none'
+                                                            }`}
+                                                        >
+                                                            <p>{msg.message}</p>
+                                                        </div>
+                                                     )}
                                                 </div>
                                                 
-                                                <div className="transition-opacity opacity-0 group-hover:opacity-100 self-center">
+                                                <div className="transition-opacity opacity-0 group-hover:opacity-100 self-center flex gap-1">
+                                                    {!isEditing && canEdit && (
+                                                        <button
+                                                            onClick={() => setEditingMessage({id: msg.id, text: msg.message})}
+                                                            className="p-1.5 rounded-full text-muted-foreground hover:bg-accent"
+                                                        >
+                                                            <PencilIcon className="w-4 h-4" />
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => setReactingTo(reactingTo === msg.id ? null : msg.id)}
                                                         className="p-1.5 rounded-full text-muted-foreground hover:bg-accent"
@@ -222,7 +257,7 @@ const Messenger: React.FC = () => {
                                             </div>
 
                                             {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                                                <div className={`flex gap-1.5 mt-1 ${msg.sender === currentUser.emailOrPhone ? 'justify-end mr-10' : 'justify-start ml-2'}`}>
+                                                <div className={`flex gap-1.5 mt-1 ${isMyMessage ? 'justify-start ms-2' : 'justify-end me-10'}`}>
                                                     {Object.entries(msg.reactions).map(([emoji, users]) => 
                                                         users.length > 0 ? (
                                                             <button
@@ -234,14 +269,14 @@ const Messenger: React.FC = () => {
                                                                 className={`flex items-center bg-accent px-2 py-0.5 rounded-full shadow-sm border ${users.includes(currentUser!.emailOrPhone) ? 'border-primary' : 'border-transparent'} text-xs`}
                                                             >
                                                                 <span className="text-sm">{emoji}</span>
-                                                                <span className="ml-1 font-semibold text-foreground">{users.length}</span>
+                                                                <span className="mr-1 font-semibold text-foreground">{users.length}</span>
                                                             </button>
                                                         ) : null
                                                     )}
                                                 </div>
                                             )}
                                         </div>
-                                    ))}
+                                    )})}
                                     <div ref={messagesEndRef} />
                                 </div>
                             </div>
@@ -251,7 +286,7 @@ const Messenger: React.FC = () => {
                                         type="text"
                                         value={message}
                                         onChange={e => setMessage(e.target.value)}
-                                        placeholder="Type your message..."
+                                        placeholder="پیام خود را بنویسید..."
                                         className="flex-1 bg-background px-4 py-3 rounded-full border border-input focus:outline-none focus:ring-2 focus:ring-ring"
                                         autoComplete="off"
                                     />
@@ -264,8 +299,8 @@ const Messenger: React.FC = () => {
                     ) : (
                         <div className="flex-grow flex items-center justify-center text-center">
                             <div className="text-muted-foreground">
-                                <h2 className="text-xl font-semibold">Welcome to your Messenger</h2>
-                                <p>Select a friend to start a conversation.</p>
+                                <h2 className="text-xl font-semibold">به پیام‌رسان خوش آمدید</h2>
+                                <p>یک دوست را برای شروع گفتگو انتخاب کنید.</p>
                             </div>
                         </div>
                     )}

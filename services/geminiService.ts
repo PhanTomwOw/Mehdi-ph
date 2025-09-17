@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { SportComplex, Review, User, AISuggestion } from '../types';
 
@@ -13,27 +12,27 @@ const sportsComplexSchema = {
   items: {
     type: Type.OBJECT,
     properties: {
-      id: { type: Type.INTEGER, description: "Unique identifier for the complex" },
-      name: { type: Type.STRING, description: "Name of the sports complex" },
-      address: { type: Type.STRING, description: "Full address of the complex in Tabriz" },
+      id: { type: Type.INTEGER, description: "شناسه منحصر به فرد برای مجموعه" },
+      name: { type: Type.STRING, description: "نام مجموعه ورزشی" },
+      address: { type: Type.STRING, description: "آدرس کامل مجموعه در تبریز" },
       sports: {
         type: Type.ARRAY,
         items: { type: Type.STRING },
-        description: "List of available sports like Futsal, Volleyball, etc.",
+        description: "لیست ورزش‌های موجود مانند فوتسال، والیبال و غیره.",
       },
-      description: { type: Type.STRING, description: "A brief, appealing description of the facility" },
-      imageUrl: { type: Type.STRING, description: "A placeholder image URL from https://picsum.photos" },
-      rating: { type: Type.NUMBER, description: "A rating from 4.0 to 5.0" },
+      description: { type: Type.STRING, description: "توضیحی کوتاه و جذاب درباره امکانات" },
+      imageUrl: { type: Type.STRING, description: "یک URL تصویر جایگزین از https://picsum.photos" },
+      rating: { type: Type.NUMBER, description: "امتیازی بین 4.0 تا 5.0" },
       availableTimeSlots: {
         type: Type.ARRAY,
         items: {
           type: Type.OBJECT,
           properties: {
-            time: { type: Type.STRING, description: "Time slot, e.g., '14:00 - 15:00'" },
-            isBooked: { type: Type.BOOLEAN, description: "Whether the slot is already booked" },
+            time: { type: Type.STRING, description: "بازه زمانی، مثلا '14:00 - 15:00'" },
+            isBooked: { type: Type.BOOLEAN, description: "اینکه آیا این زمان قبلا رزرو شده است" },
           },
         },
-        description: "List of available time slots for a given day"
+        description: "لیست بازه‌های زمانی موجود برای یک روز معین"
       },
     },
   },
@@ -43,7 +42,7 @@ export const fetchSportsComplexes = async (): Promise<SportComplex[]> => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: "Generate a list of 8 fictional but realistic-sounding sports complexes in Tabriz, Iran. For each complex, provide a unique ID, name, address, a list of 3-4 sports offered, a short description, a random image URL from picsum.photos with size 600x400, a rating between 4.2 and 4.9, and 8 available time slots for today, with about 3 of them marked as booked.",
+      contents: "یک لیست شامل ۸ مجموعه ورزشی تخیلی اما با اسامی واقع‌گرایانه در شهر تبریز، ایران ایجاد کن. برای هر مجموعه، یک شناسه منحصر به فرد، نام، آدرس، لیستی از ۳-۴ ورزش ارائه‌شده، توضیحی کوتاه، یک URL تصویر تصادفی از picsum.photos با اندازه 600x400، امتیازی بین ۴.۲ و ۴.۹، و ۸ بازه زمانی موجود برای امروز که حدود ۳ تای آنها به عنوان رزرو شده علامت‌گذاری شده باشند، ارائه بده.",
       config: {
         responseMimeType: "application/json",
         responseSchema: sportsComplexSchema,
@@ -66,44 +65,44 @@ export const generateTeamBuildingPost = async (sport: string, time: string, mess
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `You are a friendly and enthusiastic sports community manager. A user wants to find teammates for an activity in Tabriz. Create an engaging and inviting announcement post for them.
+            contents: `شما یک مدیر جامعه ورزشی دوستانه و پرشور هستید. یک کاربر می‌خواهد برای فعالیتی در تبریز هم‌تیمی پیدا کند. یک پست anunciamento جذاب و دعوت‌کننده برای او ایجاد کنید.
             
-            Here are the details:
-            - Sport: ${sport}
-            - Time: ${time}
-            - User's message: "${message}"
+            جزئیات به شرح زیر است:
+            - ورزش: ${sport}
+            - زمان: ${time}
+            - پیام کاربر: "${message}"
 
-            The post should be friendly, clear, and encourage people to join. Write it in a way that can be easily copied and shared on social media. Start with a catchy headline.`,
+            پست باید دوستانه، واضح و تشویق‌کننده برای پیوستن باشد. آن را به گونه‌ای بنویسید که به راحتی بتوان آن را کپی و در شبکه‌های اجتماعی به اشتراک گذاشت. با یک عنوان جذاب شروع کنید.`,
         });
         return response.text;
     } catch (error) {
         console.error("Error generating team building post:", error);
-        return "Sorry, we couldn't generate a post right now. Please try again later.";
+        return "متاسفانه، در حال حاضر نتوانستیم پستی ایجاد کنیم. لطفاً بعداً دوباره امتحان کنید.";
     }
 };
 
 export const summarizeReviews = async (reviews: Review[]): Promise<string> => {
     try {
         if (reviews.length === 0) {
-            return "No reviews to summarize.";
+            return "هیچ نظری برای خلاصه‌سازی وجود ندارد.";
         }
 
-        const reviewContent = reviews.map(r => `- Rating: ${r.rating}/5\n- Comment: "${r.comment}"`).join('\n\n');
+        const reviewContent = reviews.map(r => `- امتیاز: ${r.rating}/5\n- نظر: "${r.comment}"`).join('\n\n');
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `As a helpful assistant, analyze the following user reviews for a sports complex. Provide a balanced, brief summary highlighting the main positive points (pros) and negative points (cons). Do not invent information. Base your summary solely on the provided reviews.
+            contents: `به عنوان یک دستیار مفید، نظرات کاربران زیر را برای یک مجموعه ورزشی تحلیل کن. خلاصه‌ای متعادل و مختصر ارائه بده که نکات مثبت اصلی (مزایا) و نکات منفی اصلی (معایب) را برجسته کند. اطلاعاتی را از خودت اضافه نکن. خلاصه‌ات را تنها بر اساس نظرات ارائه‌شده بنویس.
 
-            Here are the reviews:
+            نظرات به شرح زیر است:
             ${reviewContent}
             
-            Please structure your output with a "Pros:" section and a "Cons:" section. If there are no clear cons or pros, state that.`,
+            لطفاً خروجی خود را با بخش‌های "مزایا:" و "معایب:" ساختاربندی کن. اگر معایب یا مزایای واضحی وجود نداشت، این موضوع را ذکر کن.`,
         });
 
         return response.text;
     } catch (error) {
         console.error("Error summarizing reviews:", error);
-        throw new Error("Failed to generate review summary.");
+        throw new Error("خلاصه‌سازی نظرات با شکست مواجه شد.");
     }
 };
 
@@ -112,8 +111,8 @@ const suggestionSchema = {
     items: {
         type: Type.OBJECT,
         properties: {
-            name: { type: Type.STRING, description: "The name of the suggested complex." },
-            reason: { type: Type.STRING, description: "A short, personalized reason for the suggestion." }
+            name: { type: Type.STRING, description: "نام مجموعه پیشنهادی." },
+            reason: { type: Type.STRING, description: "یک دلیل کوتاه و شخصی‌سازی‌شده برای پیشنهاد." }
         },
     }
 };
@@ -127,14 +126,14 @@ export const getAIComplexSuggestions = async (user: User, complexes: SportComple
         
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `You are a sports complex recommendation assistant for Tabriz SportZone.
-            A user with the identifier "${user.emailOrPhone}" wants personalized suggestions.
-            Based on their profile (you can infer preferences), suggest the top 3 complexes for them from the following list.
-            Provide a short, friendly, and personalized reason for each suggestion.
+            contents: `شما یک دستیار پیشنهاد مجموعه ورزشی برای اسپورت‌زون تبریز هستید.
+            کاربری با شناسه "${user.emailOrPhone}" پیشنهادهای شخصی‌سازی‌شده می‌خواهد.
+            بر اساس پروفایل او (می‌توانید ترجیحات را استنباط کنید)، ۳ مجموعه برتر را از لیست زیر به او پیشنهاد دهید.
+            برای هر پیشنهاد یک دلیل کوتاه، دوستانه و شخصی‌سازی‌شده ارائه دهید.
 
-            Available complexes: ${complexNames}
+            مجموعه‌های موجود: ${complexNames}
 
-            Return the response as a JSON array of objects, where each object has a 'name' and a 'reason' key.`,
+            پاسخ را به صورت یک آرایه JSON از اشیاء برگردانید که هر شیء دارای کلیدهای 'name' و 'reason' باشد.`,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: suggestionSchema,
@@ -147,6 +146,6 @@ export const getAIComplexSuggestions = async (user: User, complexes: SportComple
 
     } catch (error) {
         console.error("Error getting AI suggestions:", error);
-        throw new Error("Failed to generate AI suggestions.");
+        throw new Error("ایجاد پیشنهادهای هوش مصنوعی با شکست مواجه شد.");
     }
 };

@@ -31,7 +31,7 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
             const result = await getAIComplexSuggestions(currentUser, complexes);
             setSuggestions(result);
         } catch (error) {
-            setSuggestionError("Sorry, we couldn't generate suggestions at this time.");
+            setSuggestionError("متاسفانه، در حال حاضر قادر به ایجاد پیشنهاد نیستیم.");
         } finally {
             setIsSuggesting(false);
         }
@@ -43,19 +43,19 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
         setFriendSuccess('');
         try {
             await addFriend(friendId);
-            setFriendSuccess(`Friend request sent to ${friendId}!`);
+            setFriendSuccess(`درخواست دوستی به ${friendId} ارسال شد!`);
             setFriendId('');
         } catch (err: any) {
-            setFriendError(err.message || 'Could not add friend.');
+            setFriendError(err.message || 'افزودن دوست امکان‌پذیر نیست.');
         }
     };
 
     if (!currentUser) {
         return (
             <div className="container mx-auto px-6 py-12 text-center">
-                <h1 className="text-2xl text-foreground">Please log in to view your profile.</h1>
+                <h1 className="text-2xl text-foreground">لطفاً برای مشاهده پروفایل خود وارد شوید.</h1>
                 <button onClick={onBack} className="mt-4 text-primary font-semibold hover:underline">
-                    &larr; Back to all complexes
+                    بازگشت به لیست مجموعه‌ها &larr;
                 </button>
             </div>
         );
@@ -64,27 +64,27 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
     return (
         <div className="container mx-auto px-6 py-12">
             <button onClick={onBack} className="mb-8 text-primary font-semibold hover:underline">
-                &larr; Back to all complexes
+                بازگشت به لیست مجموعه‌ها &larr;
             </button>
             <div className="max-w-4xl mx-auto">
                 <div className="bg-card border border-border rounded-2xl shadow-xl p-8 text-center mb-8">
                     <UserCircleIcon className="w-24 h-24 mx-auto text-muted-foreground/50 mb-4" />
-                    <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+                    <h1 className="text-3xl font-bold text-foreground">پروفایل من</h1>
                     <p className="text-lg text-muted-foreground mt-4">
-                        Welcome back, <span className="font-semibold text-primary">{currentUser.emailOrPhone}</span>!
+                        خوش آمدید، <span className="font-semibold text-primary">{currentUser.emailOrPhone}</span>!
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Friends Section */}
                     <div className="bg-card border border-border rounded-2xl shadow-xl p-6">
-                         <h2 className="text-2xl font-bold text-foreground mb-4">Friends</h2>
+                         <h2 className="text-2xl font-bold text-foreground mb-4">دوستان</h2>
                          <form onSubmit={handleAddFriend} className="flex gap-2 mb-4">
                             <input
                                 type="text"
                                 value={friendId}
                                 onChange={e => setFriendId(e.target.value)}
-                                placeholder="Enter friend's email or phone"
+                                placeholder="ایمیل یا تلفن دوست خود را وارد کنید"
                                 className="flex-1 bg-background px-4 py-2 rounded-lg border border-input focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                             <button type="submit" className="p-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
@@ -99,28 +99,28 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
                                 <div key={friend.id} className={`flex justify-between items-center bg-muted p-3 rounded-lg ${friend.status === 'pending' ? 'opacity-70' : ''}`}>
                                     <p className="text-card-foreground font-medium truncate">{friend.id}</p>
                                     {friend.status === 'accepted' ? (
-                                        <button onClick={() => setCurrentView({name: 'messenger'})} className="p-2 rounded-full hover:bg-accent text-muted-foreground" aria-label={`Chat with ${friend.id}`}>
+                                        <button onClick={() => setCurrentView({name: 'messenger'})} className="p-2 rounded-full hover:bg-accent text-muted-foreground" aria-label={`چت با ${friend.id}`}>
                                             <ChatBubbleLeftRightIcon className="w-5 h-5" />
                                         </button>
                                     ) : (
                                         <div className="flex items-center gap-2">
                                             <ClockIcon className="w-4 h-4 text-muted-foreground" />
-                                            <span className="text-xs font-semibold text-muted-foreground">Pending</span>
+                                            <span className="text-xs font-semibold text-muted-foreground">در انتظار</span>
                                         </div>
                                     )}
                                 </div>
                             )) : (
-                                <p className="text-muted-foreground text-center py-4">You haven't added any friends yet.</p>
+                                <p className="text-muted-foreground text-center py-4">هنوز دوستی اضافه نکرده‌اید.</p>
                             )}
                          </div>
                     </div>
 
                     {/* Booking History Section */}
                     <div className="bg-card border border-border rounded-2xl shadow-xl p-6">
-                         <h2 className="text-2xl font-bold text-foreground mb-4">Booking History</h2>
+                         <h2 className="text-2xl font-bold text-foreground mb-4">تاریخچه رزروها</h2>
                          <div className="text-center bg-muted p-6 rounded-lg">
-                            <p className="text-muted-foreground">You have no past bookings.</p>
-                            <p className="text-sm text-muted-foreground/80 mt-1">Book a time slot and it will appear here!</p>
+                            <p className="text-muted-foreground">شما هیچ رزرو گذشته‌ای ندارید.</p>
+                            <p className="text-sm text-muted-foreground/80 mt-1">یک سانس رزرو کنید تا در اینجا نمایش داده شود!</p>
                         </div>
                     </div>
                 </div>
@@ -128,13 +128,13 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
                 {/* AI Suggestions Section */}
                 <div className="bg-card border border-border rounded-2xl shadow-xl p-6 mt-8">
                     <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center">
-                       <SparklesIcon className="w-6 h-6 mr-2 text-primary" />
-                       AI-Powered Suggestions
+                       <SparklesIcon className="w-6 h-6 ms-2 text-primary" />
+                       پیشنهادهای هوش مصنوعی
                     </h2>
                     <div className="bg-muted p-6 rounded-lg flex flex-col min-h-[150px]">
                         <div className="flex-grow">
                             { !isSuggesting && suggestions.length === 0 && !suggestionError && (
-                                 <p className="text-muted-foreground mb-4">Based on your profile, we can suggest the best complexes for you.</p>
+                                 <p className="text-muted-foreground mb-4">بر اساس پروفایل شما، می‌توانیم بهترین مجموعه‌ها را به شما پیشنهاد دهیم.</p>
                             )}
 
                             {isSuggesting && <Spinner />}
@@ -146,7 +146,7 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
                             )}
                             
                             {!isSuggesting && suggestions.length > 0 && (
-                                <div className="space-y-4 text-left">
+                                <div className="space-y-4 text-right">
                                     {suggestions.map((suggestion, index) => (
                                         <div key={index} className="p-4 bg-background border border-border rounded-xl shadow-sm transition-shadow hover:shadow-md">
                                             <p className="text-lg font-bold text-primary">{suggestion.name}</p>
@@ -162,7 +162,7 @@ const Profile: React.FC<ProfileProps> = ({ onBack, complexes, setCurrentView }) 
                                 onClick={handleGetSuggestions}
                                 className="w-full mt-4 bg-primary text-primary-foreground py-2.5 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                             >
-                                {suggestions.length > 0 ? 'Refresh Suggestions' : 'Get Suggestions'}
+                                {suggestions.length > 0 ? 'دریافت مجدد پیشنهادها' : 'دریافت پیشنهادها'}
                             </button>
                         )}
                     </div>

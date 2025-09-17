@@ -19,6 +19,7 @@ interface AuthContextType {
   addFriend: (friendId: string) => Promise<void>;
   sendMessage: (receiverId: string, message: string) => Promise<void>;
   toggleReaction: (conversationId: string, messageId: number, emoji: string) => void;
+  editMessage: (conversationId: string, messageId: number, newText: string) => void;
 
   // Notifications
   unreadCounts: { [conversationId: string]: number };
@@ -102,7 +103,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCurrentUser(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
     } else {
-        throw new Error('User not found or password incorrect.');
+        throw new Error('کاربر یافت نشد یا رمز عبور اشتباه است.');
     }
   };
 
@@ -110,7 +111,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (emailOrPhone: string, password?: string): Promise<void> => {
     const storedUsers = JSON.parse(localStorage.getItem('users') || '{}');
     if (storedUsers[emailOrPhone]) {
-        throw new Error('User with this email or phone already exists.');
+        throw new Error('کاربری با این ایمیل یا شماره تلفن قبلاً ثبت‌نام کرده است.');
     }
     
     storedUsers[emailOrPhone] = { password };
@@ -148,15 +149,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   const addFriend = async (friendId: string): Promise<void> => {
     if (!currentUser || friendId === currentUser.emailOrPhone) {
-      throw new Error("You cannot add yourself as a friend.");
+      throw new Error("شما نمی‌توانید خودتان را به عنوان دوست اضافه کنید.");
     }
     if (friends.some(f => f.id === friendId)) {
-        throw new Error("You have already added or sent a request to this user.");
+        throw new Error("شما قبلاً این کاربر را اضافه کرده‌اید یا درخواست دوستی فرستاده‌اید.");
     }
 
     const storedUsers = JSON.parse(localStorage.getItem('users') || '{}');
     if (!storedUsers[friendId]) {
-        throw new Error("User not found.");
+        throw new Error("کاربر یافت نشد.");
     }
     
     setFriends(prevFriends => {
@@ -175,7 +176,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const sendMessage = async (receiverId: string, message: string): Promise<void> => {
-    if (!currentUser) throw new Error("You must be logged in to send messages.");
+    if (!currentUser) throw new Error("برای ارسال پیام باید وارد شوید.");
 
     const newMessage: DirectMessage = {
         id: Date.now(),
@@ -239,7 +240,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         return newDms;
     });
-};
+  };
+  
+  const editMessage = (conversationId: string, messageId: number, newText: string) => {
+     if (!currentUser) return;
+     setDirectMessages(prevDms => {
+        const currentConversation = prevDms[conversationId];
+        if (!currentConversation) return prevDms;
+        
+        const updatedConversation = currentConversation.map(msg => 
+            (msg.id === messageId && msg.sender === currentUser.emailOrPhone)
+                ? { ...msg, message: newText }
+                : msg
+        );
+        
+        const newDms = { ...prevDms, [conversationId]: updatedConversation };
+
+        try {
+            const key = getStorageKey(currentUser, 'dms');
+            localStorage.setItem(key, JSON.stringify(newDms));
+        } catch (error) {
+            console.error("Failed to save edited message to local storage", error);
+        }
+        return newDms;
+     });
+  };
+
 
   const addSimulatedReply = (fromFriendId: string) => {
     if(!currentUser) return;
@@ -248,7 +274,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: Date.now(),
         sender: fromFriendId,
         receiver: currentUser.emailOrPhone,
-        message: `Sounds good! This is an automated reply.`,
+        message: `عالیه! این یک پاسخ خودکار است.`,
         timestamp: Date.now(),
     };
     
@@ -312,6 +338,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     addFriend,
     sendMessage,
     toggleReaction,
+    editMessage,
     unreadCounts,
     markConversationAsRead,
     addSimulatedReply,

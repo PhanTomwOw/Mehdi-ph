@@ -29,7 +29,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialForm, onClose }) => {
       }
       onClose();
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || 'یک خطای غیرمنتظره رخ داد.');
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +38,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialForm, onClose }) => {
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity" aria-modal="true" role="dialog">
       <div className="bg-card rounded-2xl shadow-2xl m-4 max-w-md w-full transform transition-all scale-100 relative border border-border">
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground" aria-label="Close authentication modal">
+        <button onClick={onClose} className="absolute top-4 left-4 text-muted-foreground hover:text-foreground" aria-label="بستن مودال احراز هویت">
             <XIcon className="h-6 w-6" />
         </button>
 
@@ -48,21 +48,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialForm, onClose }) => {
                     onClick={() => setFormType('login')}
                     className={`flex-1 py-3 text-center font-semibold transition-colors ${formType === 'login' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
                 >
-                    Login
+                    ورود
                 </button>
                  <button
                     onClick={() => setFormType('register')}
                     className={`flex-1 py-3 text-center font-semibold transition-colors ${formType === 'register' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
                 >
-                    Sign Up
+                    ثبت‌نام
                 </button>
             </div>
 
             <h2 className="text-2xl font-bold text-foreground mb-2 text-center">
-                {formType === 'login' ? 'Welcome Back!' : 'Create Your Account'}
+                {formType === 'login' ? 'خوش آمدید!' : 'حساب کاربری خود را بسازید'}
             </h2>
             <p className="text-muted-foreground mb-6 text-center">
-                {formType === 'login' ? 'Log in to continue your journey.' : 'Join us to start booking and playing.'}
+                {formType === 'login' ? 'برای ادامه سفر خود وارد شوید.' : 'به ما بپیوندید تا رزرو و بازی را شروع کنید.'}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -73,7 +73,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialForm, onClose }) => {
                 )}
                 <div>
                     <label htmlFor="emailOrPhone" className="block text-sm font-medium text-card-foreground mb-1">
-                        Email or Phone Number
+                        ایمیل یا شماره تلفن
                     </label>
                     <input
                         type="text"
@@ -87,7 +87,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialForm, onClose }) => {
                 </div>
                  <div>
                     <label htmlFor="password" className="block text-sm font-medium text-card-foreground mb-1">
-                        Password
+                        رمز عبور
                     </label>
                     <input
                         type="password"
@@ -104,7 +104,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialForm, onClose }) => {
                     disabled={isLoading}
                     className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex justify-center items-center"
                 >
-                    {isLoading ? <Spinner size="sm" /> : (formType === 'login' ? 'Login' : 'Create Account')}
+                    {isLoading ? <Spinner size="sm" /> : (formType === 'login' ? 'ورود' : 'ایجاد حساب کاربری')}
                 </button>
             </form>
         </div>

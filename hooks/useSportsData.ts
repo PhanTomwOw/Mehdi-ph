@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import type { SportComplex } from '../types';
 import { fetchSportsComplexes } from '../services/geminiService';
@@ -17,10 +16,10 @@ export const useSportsData = () => {
         if(data && data.length > 0) {
             setComplexes(data);
         } else {
-            setError("Could not fetch sports complex data. The service might be temporarily unavailable.");
+            setError("داده‌های مجموعه‌های ورزشی دریافت نشد. سرویس ممکن است به طور موقت در دسترس نباشد.");
         }
       } catch (e) {
-        setError("An unexpected error occurred.");
+        setError("یک خطای غیرمنتظره رخ داد.");
         console.error(e);
       } finally {
         setIsLoading(false);
